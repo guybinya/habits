@@ -1,11 +1,10 @@
-import React, {useEffect, useRef, useState} from 'react';
+import React, {useRef} from 'react';
 import * as Haptics from 'expo-haptics';
 import {ImpactFeedbackStyle} from 'expo-haptics';
 import {Animated, Easing, StyleSheet, Text, TextInput, TouchableOpacity, View} from 'react-native';
-import {Audio} from 'expo-av';
 
 const activeColor = 'rgba(71,94,94,0.86)';
-const lastColor = '#197176';
+const lastColor = 'rgba(30,40,40,0.84)';
 const finishColor = '#1bbe67';
 const borderFinishColor = '#06d6a0';
 

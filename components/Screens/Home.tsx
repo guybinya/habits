@@ -25,51 +25,73 @@ interface Habit {
 	id: number,
 	name: string,
 	count: number,
-	isCeleb: boolean
+	isCeleb: boolean,
+	defaultCount: number
 }
 
 const defaultHabits = [
 	{
 		id: 1,
-		name: 'Practice Guitar',
-		count: 1,
-		isCeleb: false
+		name: '50 Push Ups',
+		count: 2,
+		isCeleb: false,
+		defaultCount: 2
 	},
 	{
 		id: 2,
-		name: 'Practice Piano',
+		name: 'Abs',
 		count: 1,
-		isCeleb: false
+		isCeleb: false,
+		defaultCount: 1
 	},
 	{
 		id: 3,
-		name: 'Produce',
+		name: 'Meditate',
 		count: 1,
-		isCeleb: false
+		isCeleb: false,
+		defaultCount: 1
 	},
 	{
 		id: 4,
-		name: 'Read',
+		name: 'Read a Book',
 		count: 1,
-		isCeleb: false
+		isCeleb: false,
+		defaultCount: 1
 	},
 	{
 		id: 5,
-		name: 'Back Physio',
-		count: 1,
-		isCeleb: false
+		name: 'Jira Ticket',
+		count: 3,
+		isCeleb: false,
+		defaultCount: 3
 	},
 	{
 		id: 6,
-		name: 'Meditate',
+		name: 'Practice Guitar',
 		count: 1,
-		isCeleb: false
+		isCeleb: false,
+		defaultCount: 1
 	},
 	{
 		id: 7,
+		name: 'Practice Piano',
+		count: 1,
+		isCeleb: false,
+		defaultCount: 1
+	},
+	{
+		id: 8,
+		name: 'Produce a Beat',
+		count: 1,
+		isCeleb: false,
+		defaultCount: 1
+	},
+	{
+		id: 9,
 		name: 'Freestyle',
 		count: 1,
-		isCeleb: false
+		isCeleb: false,
+		defaultCount: 1
 	},
 ]
 
@@ -85,13 +107,6 @@ const Home = () => {
 		getHabits();
 	}, []);
 
-	// useLayoutEffect(() => {
-	// 	AppState.addEventListener('change', () => setStorageHabits(habits));
-	// 	return () => {
-	// 		AppState.removeEventListener('change', () => setStorageHabits(habits));
-	// 	}
-	// }, [habits])
-
 	const checkWin = (tempHabits: Array<Habit>) => {
 		const winHabit = tempHabits.find((habit: Habit) => habit.count === 0);
 		if (winHabit && winHabit.count === 0) {
@@ -100,7 +115,7 @@ const Home = () => {
 	}
 
 	const setStorageHabits = async (habits: Array<Habit>) => {
-		console.log('saving')
+		console.log('saving');
 		await AsyncStorage.setItem('@habits', JSON.stringify(habits));
 	}
 
@@ -119,6 +134,17 @@ const Home = () => {
 		await AsyncStorage.setItem('@habits', JSON.stringify(defaultHabits));
 		await AsyncStorage.setItem('@timestamp', getTodayTimestamp());
 		setHabits(defaultHabits);
+		await setStorageHabits(defaultHabits);
+	}
+
+	const newDay = async () => {
+		const tempHabits = habits.map(habit => {
+			habit.count = habit.defaultCount;
+			return habit;
+		});
+		await AsyncStorage.setItem('@habits', JSON.stringify(tempHabits));
+		await AsyncStorage.setItem('@timestamp', getTodayTimestamp());
+		setHabits(tempHabits);
 	}
 
 	const decrementCount = (habitId: number) => {
@@ -177,7 +203,8 @@ const Home = () => {
 			id: habits.length + 1,
 			name: text,
 			count: 1,
-			isCeleb: false
+			isCeleb: false,
+			defaultCount: 1
 		})
 		setStorageHabits(tempHabits);
 		setAddMode(false);
@@ -212,8 +239,14 @@ const Home = () => {
 			</KeyboardAvoidingView>
 
 			{showConfetti ? <ConfettiCannon count={200} origin={{x: -10, y: 0}} /> : null}
-			<Button title={'Reset'} onPress={resetHabits} />
-
+			<View style={styles.buttonContainer}>
+				<View style={{flex: 1}}>
+					<Button title={'New Day'} onPress={newDay} />
+				</View>
+				<View style={{flex: 1}}>
+					<Button color={'red'} title={'Reset to Default'} onPress={resetHabits} />
+				</View>
+			</View>
 		</View>
 	);
 }
@@ -221,6 +254,10 @@ const Home = () => {
 const { height } = Dimensions.get("window");
 
 const styles = StyleSheet.create({
+	buttonContainer: {
+		flexDirection: 'row-reverse',
+		justifyContent: 'space-evenly'
+	},
 	backgroundVideo: {
 		height: height,
 		position: "absolute",
