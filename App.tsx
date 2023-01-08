@@ -23,7 +23,7 @@ export default function App() {
 
   return (
     <SafeAreaProvider>
-      <StatusBar style={'auto'} />
+      <StatusBar style={'light'} />
       <Home />
     </SafeAreaProvider>
   );

@@ -40,7 +40,7 @@ const styles = StyleSheet.create({
 		borderRadius: 8,
 		overflow: 'hidden',
 		marginVertical: 4,
-		backgroundColor: '#d06f8c',
+		backgroundColor: 'rgba(62,63,175,0.87)',
 		height: 50,
 		alignItems: 'center'
 	},

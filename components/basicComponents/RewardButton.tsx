@@ -1,14 +1,10 @@
-import React, {useState} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import * as Haptics from 'expo-haptics';
-import {
-	StyleSheet,
-	Animated,
-	Text,
-	TouchableOpacity, View, TextInput
-} from 'react-native';
-import { Audio } from 'expo-av';
+import {ImpactFeedbackStyle} from 'expo-haptics';
+import {Animated, Easing, StyleSheet, Text, TextInput, TouchableOpacity, View} from 'react-native';
+import {Audio} from 'expo-av';
 
-const activeColor = '#555757';
+const activeColor = 'rgba(71,94,94,0.86)';
 const lastColor = '#197176';
 const finishColor = '#1bbe67';
 const borderFinishColor = '#06d6a0';
@@ -20,35 +16,60 @@ interface RewardButtonProps {
 	isCeleb?: boolean;
 	isEdit?: boolean;
 	onEdit: (text: string) => void;
+	setEditMode: (isEdit: boolean) => void;
+	playSuccess: () => void;
 }
 
-const RewardButton = ({title='Hit Me', onPress, count, isCeleb, isEdit, onEdit} : RewardButtonProps) => {
-	const [sound, setSound] = useState<Audio.Sound>();
+const RewardButton = ({title='Hit Me', onPress, count, isCeleb, isEdit, onEdit, setEditMode, playSuccess} : RewardButtonProps) => {
+
+	const scaleAnim = useRef(new Animated.Value(1)).current
 
 	const localOnPress = async () => {
 		const result = onPress();
 		const hapticFeedback = result ? Haptics.NotificationFeedbackType.Success : Haptics.NotificationFeedbackType.Error;
 		await Haptics.notificationAsync(hapticFeedback);
+		if (result) {
+			playSuccess();
+		}
+		Animated.timing(
+			scaleAnim,
+			{
+				toValue: 1,
+				duration: 1000,
+				useNativeDriver: false
+			}
+		).start();
 	}
 
 	const startPress = async () => {
-		const { sound } = await Audio.Sound.createAsync(
-			require('../../assets/sounds/HabitWin.mp3')
-		);
-		setSound(sound);
-		await sound.playAsync();
+		await Haptics.impactAsync(ImpactFeedbackStyle.Heavy);
+		Animated.timing(
+			scaleAnim,
+			{
+				toValue: 1.5,
+				duration: 1000,
+				useNativeDriver: false,
+				easing: Easing.ease,
+				delay: 0
+			}
+		).start();
 	}
 
 	const pausePress = async () => {
-		if (sound) {
-			await sound.pauseAsync();
-		}
+		Animated.timing(
+			scaleAnim,
+			{
+				toValue: 1,
+				duration: 200,
+				useNativeDriver: false
+			}
+		).start();
 	}
 
 	const backgroundColor = count === 0 ? finishColor : count === 1 ? activeColor : lastColor;
 
 	return (
-		<Animated.View style={[styles.animatedContainer, count === 0 && {borderColor:  borderFinishColor, opacity: 0.8}]}>
+		<Animated.View style={[styles.animatedContainer, count === 0 && {borderColor:  borderFinishColor, opacity: 0.8, transform: [{scaleX: scaleAnim}, {scaleY: scaleAnim}]}]}>
 			{isEdit ? ( // Edit Mode
 				<View style={[styles.button, {backgroundColor: backgroundColor}]}>
 					<TextInput onChangeText={onEdit}
@@ -58,7 +79,7 @@ const RewardButton = ({title='Hit Me', onPress, count, isCeleb, isEdit, onEdit} 
 				</View>
 			) : ( // Regular Button
 				<TouchableOpacity style={[styles.button, {backgroundColor: backgroundColor}]}
-				                  activeOpacity={0.8} delayLongPress={4000} onPressOut={pausePress}
+				                  activeOpacity={0.8} delayLongPress={500} onPressOut={pausePress}
 				                  onPressIn={startPress} onLongPress={localOnPress} disabled={count === 0}>
 					<Text style={styles.title}>{title}</Text>
 				</TouchableOpacity>
