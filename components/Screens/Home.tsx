@@ -1,11 +1,16 @@
 import React, {useLayoutEffect, useState} from 'react';
-import {Button, Text, StyleSheet, View, ScrollView, KeyboardAvoidingView} from 'react-native';
+import {Button, Dimensions, KeyboardAvoidingView, ScrollView, StyleSheet, Text, View} from 'react-native';
 import RewardButton from '../basicComponents/RewardButton';
 import ConfettiCannon from 'react-native-confetti-cannon';
 import * as Haptics from 'expo-haptics';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import AddRewardButton from "../basicComponents/AddRewardButton";
+import {ResizeMode, Video, Audio} from "expo-av";
+
+const victory1 = require('../../assets/sounds/victory1.mp3');
+const victory2 = require('../../assets/sounds/victory2.wav');
+const victories = [victory1, victory2];
 
 const getTodayTimestamp = () => {
 	const today = new Date();
@@ -179,8 +184,19 @@ const Home = () => {
 		setHabits(tempHabits);
 	}
 
+	const playSuccess = async () => {
+		const randomElement = victories[Math.floor(Math.random() * victories.length)];
+		const { sound } = await Audio.Sound.createAsync(randomElement);
+		await sound.playAsync();
+	}
+
 	return (
 		<View style={[styles.container, {paddingTop: insets.top}]}>
+			<Video source={require("../../assets/habits-bg.mp4")}
+			       style={styles.backgroundVideo}
+			       isLooping={true}
+			       shouldPlay={true}
+			       resizeMode={ResizeMode.COVER} />
 			{/*<Header onAdd={toggleAddMode} onEdit={toggleEditMode} title={'Habits'} />*/}
 			<KeyboardAvoidingView behavior={'padding'}  style={styles.rewardContainer}>
 				<ScrollView style={styles.rewardContainer}>
@@ -188,7 +204,8 @@ const Home = () => {
 						<Text style={styles.title}>Habits</Text>
 					</View>
 					{habits.map((habit: Habit) =>
-						<RewardButton key={habit.id} count={habit.count}
+						<RewardButton key={habit.id} count={habit.count} setEditMode={setEditMode} isEdit={editMode}
+						              playSuccess={playSuccess}
 						              title={habit.name} onPress={() => decrementCount(habit.id)} />)}
 					<AddRewardButton addMode={addMode} toggleAddMode={toggleAddMode} onPressOut={doneAdding} />
 				</ScrollView>
@@ -201,7 +218,18 @@ const Home = () => {
 	);
 }
 
+const { height } = Dimensions.get("window");
+
 const styles = StyleSheet.create({
+	backgroundVideo: {
+		height: height,
+		position: "absolute",
+		top: 0,
+		left: 0,
+		alignItems: "stretch",
+		bottom: 0,
+		right: 0
+	},
 	titleContainer: {
 		justifyContent: 'center',
 		alignItems: 'center',
@@ -210,6 +238,7 @@ const styles = StyleSheet.create({
 	title: {
 		textAlign: 'center',
 		fontSize: 40,
+		color: 'white',
 		fontFamily: 'VesperLibre-Bold'
 	},
 	container: {
